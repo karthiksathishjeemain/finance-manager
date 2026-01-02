@@ -1,6 +1,6 @@
 # Family Loans Manager
 
-A web application for tracking and managing family loans from banks and self-help groups. Built with Node.js, Express, and SQLite.
+A web application for tracking and managing family loans from banks and self-help groups. Built with Node.js, Express, and PostgreSQL.
 
 ## Features
 
@@ -19,6 +19,15 @@ A web application for tracking and managing family loans from banks and self-hel
    ```bash
    npm install
    ```
+3. Set up PostgreSQL database (see Database Setup below)
+
+## Database Setup
+
+### Local Development
+You can use a local PostgreSQL instance or a free cloud database:
+- **Vercel Postgres** (recommended for deployment)
+- **Supabase** (free tier)
+- **Neon** (free tier)
 
 ## Usage
 
