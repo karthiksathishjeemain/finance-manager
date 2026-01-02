@@ -8,6 +8,10 @@
     ],
     "routes": [
         {
+            "src": "/(styles\\.css|login\\.js|dashboard\\.js)",
+            "continue": true
+        },
+        {
             "src": "/api/(.*)",
             "dest": "server.js"
         },

@@ -121,7 +121,7 @@ app.get('/login.html', noCache, (req, res) => {
     if (req.session.userId) {
         res.redirect('/dashboard.html');
     } else {
-        res.sendFile(path.join(__dirname, 'login.html'));
+        res.sendFile(path.join(process.cwd(), 'login.html'));
     }
 });
 
@@ -129,11 +129,11 @@ app.get('/dashboard.html', noCache, (req, res) => {
     if (!req.session.userId) {
         res.redirect('/login.html');
     } else {
-        res.sendFile(path.join(__dirname, 'dashboard.html'));
+        res.sendFile(path.join(process.cwd(), 'dashboard.html'));
     }
 });
 
-app.use(express.static(__dirname));
+app.use(express.static(process.cwd()));
 
 function isAuthenticated(req, res, next) {
     if (req.session.userId) {
