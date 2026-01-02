@@ -4,9 +4,33 @@
         {
             "src": "server.js",
             "use": "@vercel/node"
+        },
+        {
+            "src": "styles.css",
+            "use": "@vercel/static"
+        },
+        {
+            "src": "login.js",
+            "use": "@vercel/static"
+        },
+        {
+            "src": "dashboard.js",
+            "use": "@vercel/static"
         }
     ],
     "routes": [
+        {
+            "src": "/styles.css",
+            "dest": "/styles.css"
+        },
+        {
+            "src": "/login.js",
+            "dest": "/login.js"
+        },
+        {
+            "src": "/dashboard.js",
+            "dest": "/dashboard.js"
+        },
         {
             "src": "/api/(.*)",
             "dest": "server.js"
