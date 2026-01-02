@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Family Loans Manager - Secure login to manage your family finances">
+    <title>Login | Family Loans Manager</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        fetch('/api/check-auth')
+            .then(res => res.json())
+            .then(data => {
+                if (data.authenticated) {
+                    window.location.replace('/dashboard.html');
+                }
+            })
+            .catch(() => { });
+    </script>
+    <style>
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-lg);
+        }
+
+        .login-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-2xl);
+            max-width: 450px;
+            width: 100%;
+            box-shadow: var(--shadow-lg), var(--shadow-glow);
+            animation: slideUp 0.6s ease;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .login-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .login-logo svg {
+            width: 50px;
+            height: 50px;
+            color: var(--color-primary);
+            filter: drop-shadow(0 0 15px var(--color-primary));
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .login-header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .login-header p {
+            color: var(--color-text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .auth-tabs {
+            display: flex;
+            gap: var(--spacing-xs);
+            background: var(--color-bg-secondary);
+            padding: 0.25rem;
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            background: transparent;
+            color: var(--color-text-secondary);
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: calc(var(--radius-md) - 0.25rem);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .auth-tab:hover {
+            color: var(--color-text-primary);
+        }
+
+        .auth-tab.active {
+            background: var(--color-primary);
+            color: white;
+            box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4);
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-md);
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        .alert-error {
+            background: hsla(0, 84%, 60%, 0.2);
+            border: 1px solid var(--color-danger);
+            color: var(--color-danger);
+        }
+
+        .alert-success {
+            background: hsla(142, 76%, 36%, 0.2);
+            border: 1px solid var(--color-success);
+            color: var(--color-success-light);
+        }
+
+        .submit-btn {
+            width: 100%;
+            margin-top: var(--spacing-md);
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: var(--spacing-lg);
+            padding-top: var(--spacing-lg);
+            border-top: 1px solid var(--glass-border);
+            color: var(--color-text-tertiary);
+            font-size: 0.875rem;
+        }
+
+        /* Form Input Overrides for Login Page */
+        .auth-form .form-group {
+            margin-bottom: var(--spacing-md);
+        }
+
+        .auth-form .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            font-size: 0.95rem;
+        }
+
+        .auth-form input[type="text"],
+        .auth-form input[type="password"] {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            color: var(--color-text-primary);
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            transition: all var(--transition-normal);
+            outline: none;
+        }
+
+        .auth-form input[type="text"]:focus,
+        .auth-form input[type="password"]:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+            background: var(--color-bg-tertiary);
+        }
+
+        .auth-form input[type="text"]::placeholder,
+        .auth-form input[type="password"]::placeholder {
+            color: var(--color-text-tertiary);
+            opacity: 0.7;
+        }
+
+        /* Override browser autofill styles */
+        .auth-form input:-webkit-autofill,
+        .auth-form input:-webkit-autofill:hover,
+        .auth-form input:-webkit-autofill:focus {
+            -webkit-text-fill-color: var(--color-text-primary) !important;
+            -webkit-box-shadow: 0 0 0 1000px var(--color-bg-secondary) inset !important;
+            box-shadow: 0 0 0 1000px var(--color-bg-secondary) inset !important;
+            border: 1px solid var(--glass-border) !important;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+
+        .auth-form input:-webkit-autofill:focus {
+            -webkit-box-shadow: 0 0 0 1000px var(--color-bg-tertiary) inset !important;
+            box-shadow: 0 0 0 1000px var(--color-bg-tertiary) inset !important;
+            border-color: var(--color-primary) !important;
+        }
+
+        /* Family Members Modal */
+        .modal-overlay-dark {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-content-members {
+            position: relative;
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            max-width: 550px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.4s ease;
+        }
+
+        .modal-header-members {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--glass-border);
+            text-align: center;
+        }
+
+        .modal-header-members h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-header-members p {
+            color: var(--color-text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .members-form {
+            padding: var(--spacing-lg);
+        }
+
+        .members-list {
+            margin-bottom: var(--spacing-md);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .member-input-group {
+            display: flex;
+            gap: var(--spacing-xs);
+            margin-bottom: var(--spacing-sm);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .member-input {
+            flex: 1;
+            padding: 0.875rem 1rem;
+            background: var(--color-bg-tertiary);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            color: var(--color-text-primary);
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            transition: all var(--transition-fast);
+        }
+
+        .member-input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+        }
+
+        .btn-remove-member {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: var(--color-danger);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .btn-remove-member:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-remove-member svg {
+            width: 18px;
+            height: 18px;
+            color: white;
+        }
+
+        .add-member-btn {
+            width: 100%;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+            padding-top: var(--spacing-md);
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .modal-actions .btn {
+            flex: 1;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px) scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-logo">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <h1>Family Loans</h1>
+                <p>Manage your family finances securely</p>
+            </div>
+
+            <div class="auth-tabs">
+                <button class="auth-tab active" data-tab="login">Login</button>
+                <button class="auth-tab" data-tab="register">Register</button>
+            </div>
+
+            <div id="alertBox" class="alert"></div>
+
+            <form id="loginForm" class="auth-form active">
+                <div class="form-group">
+                    <label for="loginFamilyName">Family Name</label>
+                    <input type="text" id="loginFamilyName" name="familyName" placeholder="Enter your family name"
+                        required autocomplete="username">
+                </div>
+
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" name="password" placeholder="Enter your password" required
+                        autocomplete="current-password">
+                </div>
+
+                <button type="submit" class="btn btn-primary submit-btn">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M15 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H15"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M10 17L15 12L10 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path d="M15 12H3" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                    Login
+                </button>
+            </form>
+
+            <form id="registerForm" class="auth-form">
+                <div class="form-group">
+                    <label for="registerFamilyName">Family Name</label>
+                    <input type="text" id="registerFamilyName" name="familyName" placeholder="Enter your family name"
+                        required autocomplete="username">
+                </div>
+
+                <div class="form-group">
+                    <label for="registerPassword">Password</label>
+                    <input type="password" id="registerPassword" name="password" placeholder="Create a password"
+                        required autocomplete="new-password">
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword"
+                        placeholder="Confirm your password" required autocomplete="new-password">
+                </div>
+
+                <button type="submit" class="btn btn-primary submit-btn">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M16 21V19C16 17.9391 15.5786 16.9217 14.8284 16.1716C14.0783 15.4214 13.0609 15 12 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        <path
+                            d="M8.5 11C10.7091 11 12.5 9.20914 12.5 7C12.5 4.79086 10.7091 3 8.5 3C6.29086 3 4.5 4.79086 4.5 7C4.5 9.20914 6.29086 11 8.5 11Z"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M20 8V14M17 11H23" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                    Create Account
+                </button>
+            </form>
+
+            <div class="login-footer">
+                <p>🔒 Your data is securely stored locally</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="familyMembersModal" style="display: none;">
+        <div class="modal-overlay-dark"></div>
+        <div class="modal-content-members">
+            <div class="modal-header-members">
+                <h2>👨‍👩‍👧‍👦 Add Family Members</h2>
+                <p>Add the names of family members who might take loans</p>
+            </div>
+            <div class="members-form">
+                <div id="membersList" class="members-list">
+                    <div class="member-input-group">
+                        <input type="text" class="member-input" placeholder="Enter family member name" />
+                        <button type="button" class="btn-remove-member" onclick="removeMemberInput(this)"
+                            style="display: none;">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-secondary add-member-btn" onclick="addMemberInput()">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                    Add Another Member
+                </button>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="skipFamilyMembers()">Skip for Now</button>
+                    <button type="button" class="btn btn-primary" onclick="saveFamilyMembers()">Save & Continue</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="login.js"></script>
+</body>
+
+</html>
