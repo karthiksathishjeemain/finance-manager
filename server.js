@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
-const { Pool } = require('pg');
+const pg = require('pg');
+const { Pool } = pg;
 const session = require('express-session');
 const pgSession = require('connect-pg-simple')(session);
 const bcrypt = require('bcrypt');
@@ -10,13 +11,13 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
+const connectionString = (process.env.POSTGRES_URL || process.env.DATABASE_URL).split('?')[0];
 
 const pool = new Pool({
     connectionString: connectionString,
-    ssl: connectionString && connectionString.includes('sslmode=require')
-        ? { rejectUnauthorized: false }
-        : false
+    ssl: {
+        rejectUnauthorized: false
+    }
 });
 
 async function initializeDatabase() {
@@ -83,7 +84,6 @@ initializeDatabase();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(__dirname));
 
 app.use(session({
     store: new pgSession({
@@ -99,6 +99,41 @@ app.use(session({
         secure: process.env.NODE_ENV === 'production'
     }
 }));
+
+// Prevent caching for HTML pages to ensure auth checks run
+const noCache = (req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    next();
+};
+
+// Page Routes with Auth Checks
+app.get('/', noCache, (req, res) => {
+    if (req.session.userId) {
+        res.redirect('/dashboard.html');
+    } else {
+        res.redirect('/login.html');
+    }
+});
+
+app.get('/login.html', noCache, (req, res) => {
+    if (req.session.userId) {
+        res.redirect('/dashboard.html');
+    } else {
+        res.sendFile(path.join(__dirname, 'login.html'));
+    }
+});
+
+app.get('/dashboard.html', noCache, (req, res) => {
+    if (!req.session.userId) {
+        res.redirect('/login.html');
+    } else {
+        res.sendFile(path.join(__dirname, 'dashboard.html'));
+    }
+});
+
+app.use(express.static(__dirname));
 
 function isAuthenticated(req, res, next) {
     if (req.session.userId) {
@@ -185,8 +220,10 @@ app.post('/api/login', async (req, res) => {
 app.post('/api/logout', (req, res) => {
     req.session.destroy((err) => {
         if (err) {
+            console.error('Logout error:', err);
             return res.status(500).json({ error: 'Logout failed' });
         }
+        res.clearCookie('connect.sid'); // Clear the session cookie
         res.json({ message: 'Logout successful' });
     });
 });
@@ -391,9 +428,8 @@ app.delete('/api/loans/:id', isAuthenticated, async (req, res) => {
     }
 });
 
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
+// Static file serving is now handled above for HTML pages with auth checks
+// Other static files (CSS, JS, images) are handled by app.use(express.static(__dirname))
 
 if (process.env.VERCEL !== '1') {
     app.listen(PORT, () => {
