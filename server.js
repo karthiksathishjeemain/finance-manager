@@ -1,6 +1,8 @@
+require('dotenv').config();
 const express = require('express');
 const { Pool } = require('pg');
 const session = require('express-session');
+const pgSession = require('connect-pg-simple')(session);
 const bcrypt = require('bcrypt');
 const bodyParser = require('body-parser');
 const path = require('path');
@@ -8,9 +10,13 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
+
 const pool = new Pool({
-    connectionString: process.env.POSTGRES_URL || process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    connectionString: connectionString,
+    ssl: connectionString && connectionString.includes('sslmode=require')
+        ? { rejectUnauthorized: false }
+        : false
 });
 
 async function initializeDatabase() {
@@ -51,6 +57,22 @@ async function initializeDatabase() {
             )
         `);
 
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS "session" (
+                "sid" varchar NOT NULL COLLATE "default",
+                "sess" json NOT NULL,
+                "expire" timestamp(6) NOT NULL
+            ) WITH (OIDS=FALSE)
+        `);
+
+        try {
+            await pool.query('ALTER TABLE "session" ADD CONSTRAINT "session_pkey" PRIMARY KEY ("sid") NOT DEFERRABLE INITIALLY IMMEDIATE');
+        } catch (e) { }
+
+        try {
+            await pool.query('CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "session" ("expire")');
+        } catch (e) { }
+
         console.log('Database tables initialized');
     } catch (error) {
         console.error('Error initializing database:', error);
@@ -64,6 +86,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname));
 
 app.use(session({
+    store: new pgSession({
+        pool: pool,
+        tableName: 'session'
+    }),
     secret: process.env.SESSION_SECRET || 'family-loans-secret-key-2026',
     resave: false,
     saveUninitialized: false,
