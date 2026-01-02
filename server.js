@@ -401,19 +401,23 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.listen(PORT, () => {
-    console.log(`\n🚀 Family Loans Manager Server Running!`);
-    console.log(`📊 Access the app at: http://localhost:${PORT}`);
-    console.log(`💾 Database: family_loans.db\n`);
-});
-
-process.on('SIGINT', () => {
-    db.close((err) => {
-        if (err) {
-            console.error('Error closing database:', err);
-        } else {
-            console.log('\n✅ Database connection closed');
-        }
-        process.exit(0);
+if (process.env.VERCEL !== '1') {
+    app.listen(PORT, () => {
+        console.log(`\n🚀 Family Loans Manager Server Running!`);
+        console.log(`📊 Access the app at: http://localhost:${PORT}`);
+        console.log(`💾 Database: family_loans.db\n`);
     });
-});
+
+    process.on('SIGINT', () => {
+        db.close((err) => {
+            if (err) {
+                console.error('Error closing database:', err);
+            } else {
+                console.log('\n✅ Database connection closed');
+            }
+            process.exit(0);
+        });
+    });
+}
+
+module.exports = app;
